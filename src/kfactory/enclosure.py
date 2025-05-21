@@ -1617,7 +1617,8 @@ class LayerEnclosureModel(RootModel[dict[str, LayerEnclosure]]):
 
     def __getattr__(self, __key: str, /) -> LayerEnclosure:
         """Retrieve attribute by key."""
-        return self.root[__key]
+        root = self.root  # Localize for slightly faster access
+        return root[__key]
 
     def __setattr__(self, __key: str, /, __val: LayerEnclosure) -> None:
         """Add a new LayerEnclosure."""
