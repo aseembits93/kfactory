@@ -148,21 +148,21 @@ def include_from_loader(
 ) -> Any:
     """Expand ruamel to support the `!include` keyword."""
 
-    @dataclass
-    class Include:
-        filename: str
-        yaml_tag: str = "!include"
+    # Cache the class definition to avoid redefining on every call
+    if not hasattr(include_from_loader, "_Include"):
+        @dataclass
+        class Include:
+            filename: str
+            yaml_tag: str = "!include"
 
-        @classmethod
-        def from_yaml(cls, constructor: SafeConstructor, node: Any) -> None:
-            d = SafeConstructor.construct_mapping(constructor, node)
+            @classmethod
+            def from_yaml(cls, constructor: SafeConstructor, node: Any) -> None:
+                d = SafeConstructor.construct_mapping(constructor, node)
+                f = Path(d["filename"])
+                # Try relative path first for efficiency
+                full_path = f if f.is_absolute() else (folder / f).resolve()
+                cells_from_yaml(full_path, library, additional_classes, verbose)
 
-            f = Path(d["filename"])
-            if f.is_absolute():
-                cells_from_yaml(f, library, additional_classes, verbose)
-            else:
-                cells_from_yaml(
-                    (folder / f).resolve(), library, additional_classes, verbose
-                )
+        include_from_loader._Include = Include
 
-    return Include
+    return include_from_loader._Include
