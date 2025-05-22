@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from enum import IntEnum, IntFlag, auto
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, overload
 
@@ -1429,11 +1430,8 @@ def filter_direction(ports: Iterable[TPort], direction: int) -> filter[TPort]:
 
 def filter_orientation(ports: Iterable[TPort], orientation: float) -> filter[TPort]:
     """Filter iterable/sequence of ports by direction :py:class:~`DIRECTION`."""
-
-    def f_func(p: TPort) -> bool:
-        return p.dcplx_trans.angle == orientation
-
-    return filter(f_func, ports)
+    # Use a generator expression for reduced function call overhead
+    return filter(lambda p: p.dcplx_trans.angle == orientation, ports)
 
 
 def filter_port_type(ports: Iterable[TPort], port_type: str) -> filter[TPort]:
